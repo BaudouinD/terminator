@@ -18,7 +18,7 @@ USE_RADS_INPUT = False
 USE_RADS_OUTPUT = False
 USE_MM_INPUT = False
 USE_MM_OUTPUT = False
-
+ROBOT_TYPE = BIOLOID
 if ROBOT_TYPE == PHANTOMX:
     constL1 = 0.001 * 54.8
     constL2 = 0.001 * 65.3
