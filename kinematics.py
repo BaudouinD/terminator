@@ -2,10 +2,7 @@ import numpy as np
 from constants import *
 import utils
 
-# THETA3_MOTOR_SIGN = -1
-# THETA2_MOTOR_SIGN = 1
-# THETA1_MOTOR_SIGN = 1
-l1,l2,l3=0.045,0.065,0.087
+l1,l2,l3=constL1,constL2,constL3
 
 def rot_Y(pos, angle):
     return [np.cos(angle)*pos[0]-np.sin(angle)*pos[2],pos[1],np.sin(angle)*pos[0]+np.cos(angle)*pos[2]]
@@ -19,8 +16,9 @@ def computeDK(a, b, c):
 
     a*=THETA1_MOTOR_SIGN
     b=THETA2_MOTOR_SIGN*b -theta2Correction
-    c=THETA3_MOTOR_SIGN*b -theta3Correction
-    c=-c
+    c=THETA3_MOTOR_SIGN*c -theta3Correction
+    # c=-c
+    # c+=np.pi
     MR3=[l3,0 ,0]
     MR3rot=rot_Y(MR3,c)
 
@@ -40,7 +38,7 @@ def computeDKDetailed(a, b, c):
     a*=THETA1_MOTOR_SIGN
     b=THETA2_MOTOR_SIGN*b -theta2Correction
     c=THETA3_MOTOR_SIGN*b -theta3Correction
-    c=-c
+    # c=-c
     MR3=[l3,0 ,0]
     MR3rot=rot_Y(MR3,c)
 
@@ -51,7 +49,7 @@ def computeDKDetailed(a, b, c):
     MR1rot=rot_Z(MR1,a)
 
 
-    return [MR3rot,MR2rot,MR1rot]
+    return [MR3rot,MR2rot,MR1rot,[0,0,0]]
 def al_kashi(adj1,adj2,opp):
     res=(adj1*adj1+adj2*adj2-opp*opp)/(2*adj1*adj2)
     newres=min(max(res,-1),1)
