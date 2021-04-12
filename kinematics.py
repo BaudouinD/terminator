@@ -1,5 +1,5 @@
 import numpy as np
-import constants
+from constants import *
 import utils
 
 # THETA3_MOTOR_SIGN = -1
@@ -34,6 +34,24 @@ def computeDK(a, b, c):
     return MR1rot
 
 
+
+def computeDKDetailed(a, b, c):
+
+    a*=THETA1_MOTOR_SIGN
+    b=THETA2_MOTOR_SIGN*b -theta2Correction
+    c=THETA3_MOTOR_SIGN*b -theta3Correction
+    c=-c
+    MR3=[l3,0 ,0]
+    MR3rot=rot_Y(MR3,c)
+
+    MR2=[l2+MR3rot[0],MR3rot[1],MR3rot[2]]
+    MR2rot=rot_Y(MR2,b)
+
+    MR1=[l1+MR2rot[0],MR2rot[1],MR2rot[2]]
+    MR1rot=rot_Z(MR1,a)
+
+
+    return [MR3rot,MR2rot,MR1rot]
 def al_kashi(adj1,adj2,opp):
     res=(adj1*adj1+adj2*adj2-opp*opp)/(2*adj1*adj2)
     newres=min(max(res,-1),1)

@@ -111,25 +111,25 @@ while True:
         for name in controls.keys():
             targets[name] = p.readUserDebugParameter(controls[name])
         # Use your own DK function, the result should be: https://www.youtube.com/watch?v=w3psAbh3AoM
-        # points = kinematics.computeDKDetailed(
-        #     targets["j_c1_rf"],
-        #     targets["j_thigh_rf"],
-        #     targets["j_tibia_rf"],
-        #     use_rads=True,
-        # ) #direct, on donne les poitns de passage
-        # i = -1
-        # T = []
-        # for pt in points:
-        #     # Drawing each step of the DK calculation
-        #     i += 1
-        #     T.append(kinematics.rotaton_2D(pt[0], pt[1], pt[2], leg_angle)) #rotZ
-        #     T[-1][0] += leg_center_pos[0]
-        #     T[-1][1] += leg_center_pos[1]
-        #     T[-1][2] += leg_center_pos[2]
-        #     # print("Drawing cross {} at {}".format(i, T))
-        #     p.resetBasePositionAndOrientation(
-        #         crosses[i], T[-1], to_pybullet_quaternion(0, 0, leg_angle)
-        #     )
+        points = kinematics.computeDKDetailed(
+            targets["j_c1_rf"],
+            targets["j_thigh_rf"],
+            targets["j_tibia_rf"],
+            
+        ) #direct, on donne les poitns de passage
+        i = -1
+        T = []
+        for pt in points:
+            # Drawing each step of the DK calculation
+            i += 1
+            T.append(kinematics.rotaton_2D(pt[0], pt[1], pt[2], leg_angle)) #rotZ
+            T[-1][0] += leg_center_pos[0]
+            T[-1][1] += leg_center_pos[1]
+            T[-1][2] += leg_center_pos[2]
+            # print("Drawing cross {} at {}".format(i, T))
+            p.resetBasePositionAndOrientation(
+                crosses[i], T[-1], to_pybullet_quaternion(0, 0, leg_angle)
+            )
 
         sim.setRobotPose(
             leg_center_pos,
@@ -145,24 +145,24 @@ while True:
         y = p.readUserDebugParameter(controls["target_y"])
         z = p.readUserDebugParameter(controls["target_z"])
         # Use your own IK function
-        # alphas = kinematics.computeIK(x, y, z, verbose=True, use_rads=True)
+        alphas = kinematics.computeIK(x, y, z)
 
-        # targets["j_c1_rf"] = alphas[0]
-        # targets["j_thigh_rf"] = alphas[1]
-        # targets["j_tibia_rf"] = alphas[2]
+        targets["j_c1_rf"] = alphas[0]
+        targets["j_thigh_rf"] = alphas[1]
+        targets["j_tibia_rf"] = alphas[2]
 
-        # state = sim.setJoints(targets)
-        # # Temp
-        # sim.setRobotPose([0, 0, 0.5], [0, 0, 0, 1])
+        state = sim.setJoints(targets)
+        # Temp
+        sim.setRobotPose([0, 0, 0.5], [0, 0, 0, 1])
 
-        # T = kinematics.rotaton_2D(x, y, z, leg_angle)
-        # T[0] += leg_center_pos[0]
-        # T[1] += leg_center_pos[1]
-        # T[2] += leg_center_pos[2]
-        # # print("Drawing cross {} at {}".format(i, T))
-        # p.resetBasePositionAndOrientation(
-        #     cross, T, to_pybullet_quaternion(0, 0, leg_angle)
-        # )
+        T = kinematics.rotaton_2D(x, y, z, leg_angle)
+        T[0] += leg_center_pos[0]
+        T[1] += leg_center_pos[1]
+        T[2] += leg_center_pos[2]
+        # print("Drawing cross {} at {}".format(i, T))
+        p.resetBasePositionAndOrientation(
+            cross, T, to_pybullet_quaternion(0, 0, leg_angle)
+        )
     elif args.mode == "robot-ik":
         None
         # Use your own IK function
