@@ -6,9 +6,8 @@ import time
 import argparse
 import pybullet as p
 from onshape_to_robot.simulation import Simulation
-import kinematics
 
-# import kinematics
+import kinematics
 from constants import *
 
 # from squaternion import Quaternion
@@ -96,7 +95,7 @@ elif args.mode == "direct":
 elif args.mode == "inverse":
     cross = p.loadURDF("target2/robot.urdf")
     # Use your own DK function
-    alphas = kinematics.computeDK(0, 0, 0)
+    alphas = kinematics.computeDK(0, 0, 0, use_rads=True)
     controls["target_x"] = p.addUserDebugParameter("target_x", -0.4, 0.4, alphas[0])
     controls["target_y"] = p.addUserDebugParameter("target_y", -0.4, 0.4, alphas[1])
     controls["target_z"] = p.addUserDebugParameter("target_z", -0.4, 0.4, alphas[2])
@@ -115,14 +114,14 @@ while True:
             targets["j_c1_rf"],
             targets["j_thigh_rf"],
             targets["j_tibia_rf"],
-            
-        ) #direct, on donne les poitns de passage
+            use_rads=True
+        )
         i = -1
         T = []
         for pt in points:
             # Drawing each step of the DK calculation
             i += 1
-            T.append(kinematics.rotaton_2D(pt[0], pt[1], pt[2], leg_angle)) #rotZ
+            T.append(kinematics.rotaton_2D(pt[0], pt[1], pt[2], leg_angle))
             T[-1][0] += leg_center_pos[0]
             T[-1][1] += leg_center_pos[1]
             T[-1][2] += leg_center_pos[2]
@@ -145,7 +144,7 @@ while True:
         y = p.readUserDebugParameter(controls["target_y"])
         z = p.readUserDebugParameter(controls["target_z"])
         # Use your own IK function
-        alphas = kinematics.computeIK(x, y, z)
+        alphas = kinematics.computeIK(x, y, z, use_rads=True)
 
         targets["j_c1_rf"] = alphas[0]
         targets["j_thigh_rf"] = alphas[1]

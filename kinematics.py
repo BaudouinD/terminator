@@ -3,7 +3,8 @@ from constants import *
 import utils
 import interpolation
 
-l1,l2,l3=constL1,constL2,constL3
+l1,l2,l3=constL3,constL2,constL1
+
 
 def rot_Y(pos, angle):
     return [np.cos(angle)*pos[0]-np.sin(angle)*pos[2],pos[1],np.sin(angle)*pos[0]+np.cos(angle)*pos[2]]
@@ -11,14 +12,26 @@ def rot_Y(pos, angle):
 def rot_Z(pos, angle):
     return [np.cos(angle)*pos[0]-np.sin(angle)*pos[1],np.sin(angle)*pos[0]+np.cos(angle)*pos[1],pos[2]]
 
+def rot_X(pos, angle):
+    return [pos[0],np.cos(angle)*pos[1]-np.sin(angle)*pos[2],np.sin(angle)*pos[1]+np.cos(angle)*pos[2]]
 
+def rad_to_deg(angle):
+    return (angle * 180 )/ np.pi
 
-def computeDK(a, b, c):
-    a*=THETA1_MOTOR_SIGN
-    b=THETA2_MOTOR_SIGN*b -theta2Correction
-    c=THETA3_MOTOR_SIGN*c -theta3Correction
-    # c=-c
-    # c+=np.pi
+def deg_to_rad(angle):
+    return (angle * np.pi) / 180
+
+def computeDK(a, b, c, use_rads=True):
+
+    if(use_rads):
+        a*=THETA1_MOTOR_SIGN
+        b=THETA2_MOTOR_SIGN*b  - theta2Correction
+        c=THETA3_MOTOR_SIGN*c  - theta3Correction
+    else:
+        a*=THETA1_MOTOR_SIGN
+        b=THETA2_MOTOR_SIGN*b  - rad_to_deg(theta2Correction)
+        c=THETA3_MOTOR_SIGN*c  - rad_to_deg(theta3Correction)
+
     MR3=[l3,0 ,0]
     MR3rot=rot_Y(MR3,c)
 
@@ -28,17 +41,21 @@ def computeDK(a, b, c):
     MR1=[l1+MR2rot[0],MR2rot[1],MR2rot[2]]
     MR1rot=rot_Z(MR1,a)
 
+    return  list(map(lambda x : x* 1000,MR1rot)) #list(map(rad_to_deg,MR1rot))
 
-    return MR1rot
+print("DK ",computeDK(0,0,0))
 
+def computeDKDetailed(a, b, c , use_rads=True):
 
+    if(use_rads):
+        a*=THETA1_MOTOR_SIGN
+        b=THETA2_MOTOR_SIGN*b  - theta2Correction
+        c=THETA3_MOTOR_SIGN*c  - theta3Correction
+    else:
+        a*=THETA1_MOTOR_SIGN
+        b=THETA2_MOTOR_SIGN*b  - rad_to_deg(theta2Correction)
+        c=THETA3_MOTOR_SIGN*c  - rad_to_deg(theta3Correction)
 
-def computeDKDetailed(a, b, c):
-
-    a*=THETA1_MOTOR_SIGN
-    b=THETA2_MOTOR_SIGN*b -theta2Correction
-    c=THETA3_MOTOR_SIGN*b -theta3Correction
-    # c=-c
     MR3=[l3,0 ,0]
     MR3rot=rot_Y(MR3,c)
 
@@ -47,9 +64,11 @@ def computeDKDetailed(a, b, c):
 
     MR1=[l1+MR2rot[0],MR2rot[1],MR2rot[2]]
     MR1rot=rot_Z(MR1,a)
+    
+    return [[0,0,0],list(map(lambda x : x* 1000,MR3rot)),list(map(lambda x : x* 1000,MR2rot)),list(map(lambda x : x* 1000,MR1rot))]#[MR3rot,MR2rot,MR1rot,[0,0,0]]
 
+print("Detailed ",computeDKDetailed(0,0,0))
 
-    return [MR3rot,MR2rot,MR1rot,[0,0,0]]
 def al_kashi(adj1,adj2,opp):
     res=(adj1*adj1+adj2*adj2-opp*opp)/(2*adj1*adj2)
     newres=min(max(res,-1),1)
@@ -60,18 +79,25 @@ def al_kashi(adj1,adj2,opp):
 def rotaton_2D(x, y, z, leg_angle):
     return rot_Z([x,y,z],leg_angle)
 
-def computeIK(x,y,z):
+
+def computeIK(x,y,z,use_rads=True):
+
+    z = -z
+
     theta1=np.arctan2(y,x)
     AH=np.sqrt(x*x+y*y)-l1
     AM=np.sqrt(z*z+AH*AH)
-    gamma2=al_kashi(l2,l3,AM)#np.arccos((l2*l2+l3*l3-AM*AM)/(2*l2*l3))
-    gamma=np.pi-gamma2
-    delta=al_kashi(l2,AM,l3)#np.arccos((l2*l2+AM*AM-l3*l3)/(2*l2*AM))
+    gamma2=al_kashi(l2,l3,AM) #np.arccos((l2*l2+l3*l3-AM*AM)/(2*l2*l3))
+    gamma=np.pi-gamma2 + theta3Correction
+    delta=al_kashi(l2,AM,l3) #np.arccos((l2*l2+AM*AM-l3*l3)/(2*l2*AM))
  
     alpha=np.arctan2(-z,AH)
-    beta=delta-alpha
+    beta=delta-alpha + theta2Correction
 
-    return [theta1, beta, gamma]
+    if(use_rads):
+        return [theta1, beta, gamma] 
+    else:
+        return list(map(rad_to_deg,[theta1, beta, gamma]))
 
 
 
