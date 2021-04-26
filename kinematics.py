@@ -213,6 +213,33 @@ def computeIK(
     return result
 
 
+# def al_kashi(adj1,adj2,opp):
+#     res=(adj1*adj1+adj2*adj2-opp*opp)/(2*adj1*adj2)
+#     newres=min(max(res,-1),1)
+#     if(newres!=res):
+#        print("WARNING : value in arccos out of bounds ([-1;1]) :%f " %res)
+#     return np.arccos(newres)
+
+# def computeIK(x,y,z, l1=constL1,l2=constL2,l3=constL3,use_rads=True):
+
+#     z = -z
+
+#     theta1=np.arctan2(y,x)
+#     AH=np.sqrt(x*x+y*y)-l1
+#     AM=np.sqrt(z*z+AH*AH)
+#     gamma2=al_kashi(l2,l3,AM) #np.arccos((l2*l2+l3*l3-AM*AM)/(2*l2*l3))
+#     gamma=np.pi-gamma2 + theta3Correction
+#     delta=al_kashi(l2,AM,l3) #np.arccos((l2*l2+AM*AM-l3*l3)/(2*l2*AM))
+ 
+#     alpha=np.arctan2(-z,AH)
+#     beta=delta-alpha + theta2Correction
+
+#     if(use_rads):
+#         return [theta1, beta, gamma] 
+#     else:
+#         return list(map(rad_to_deg,[theta1, beta, gamma]))
+
+
 def angleRestrict(angle, use_rads=False):
     if use_rads:
         return modulopi(angle)
@@ -244,5 +271,13 @@ def modulopi(angle):
 
 
 def computeIKOriented(x,y,z,leg_id,params,verbose=True):
-    tab=rot_Z([x,y,z],params.LEG_ANGLES[leg_id])
-    return computeIK(tab[0],tab[1],tab[2])
+    print(x,y,z)
+    x += params.initLeg[leg_id - 1][0]
+    y += params.initLeg[leg_id - 1][1]
+    z += params.z
+   
+    tab= rotaton_2D(x,y,z,params.legAngles[leg_id - 1])
+    res = computeIK(tab[0],tab[1],tab[2])
+    print(res)
+
+    return res

@@ -54,9 +54,9 @@ elif ROBOT_TYPE == BIOLOID:
     THETA2_MOTOR_SIGN = 1
     THETA1_MOTOR_SIGN = 1
     USE_RADS_INPUT = False
-    USE_RADS_OUTPUT = False
-    USE_MM_INPUT = True
-    USE_MM_OUTPUT = True
+    USE_RADS_OUTPUT = True
+    USE_MM_INPUT = False
+    USE_MM_OUTPUT = False
     Z_DIRECTION = -1
     LEG_ANGLES = [math.pi / 2, 0, 0, -math.pi / 2, math.pi, math.pi]
 elif ROBOT_TYPE == PHANTOMX_SIMULATION:
@@ -70,8 +70,8 @@ elif ROBOT_TYPE == PHANTOMX_SIMULATION:
     THETA3_MOTOR_SIGN = -1
     THETA2_MOTOR_SIGN = 1
     THETA1_MOTOR_SIGN = 1
-    USE_RADS_INPUT = True
-    USE_RADS_OUTPUT = True
+    USE_RADS_INPUT = False
+    USE_RADS_OUTPUT = False
     USE_MM_INPUT = False
     USE_MM_OUTPUT = False
     Z_DIRECTION = 1

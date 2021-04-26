@@ -157,24 +157,23 @@ while True:
         T = kinematics.rotaton_2D(x, y, z, leg_angle)
         T[0] += leg_center_pos[0]
         T[1] += leg_center_pos[1]
-        T[2] += leg_center_pos[2]
+        T[2] += leg_center_pos[2]   
         # print("Drawing cross {} at {}".format(i, T))
         p.resetBasePositionAndOrientation(
             cross, T, to_pybullet_quaternion(0, 0, leg_angle)
         )
     elif args.mode == "robot-ik":
-        None
-        # Use your own IK function
-        # for leg_id in range(1, 7):
-        #     alphas = kinematics.computeIKOriented(
-        #         0.01 * math.sin(2 * math.pi * 0.5 * time.time()),
-        #         0.02 * math.cos(2 * math.pi * 0.5 * time.time()),
-        #         0.03 * math.sin(2 * math.pi * 0.2 * time.time()),
-        #         leg_id,
-        #         params,
-        #         verbose=True,
-        #     )
-        #     set_leg_angles(alphas, leg_id, targets, params)
-        # state = sim.setJoints(targets)
+       # Use your own IK function
+        for leg_id in range(1, 7):
+            alphas = kinematics.computeIKOriented(
+                0.01 * math.sin(2 * math.pi * 0.5 * time.time()),
+                0.02 * math.cos(2 * math.pi * 0.5 * time.time()),
+                0.03 * math.sin(2 * math.pi * 0.2 * time.time()),
+                leg_id,
+                params,
+                verbose=True,
+            )
+            set_leg_angles(alphas, leg_id, targets, params)
+        state = sim.setJoints(targets)
 
     sim.tick()
