@@ -8,6 +8,7 @@ import pybullet as p
 from onshape_to_robot.simulation import Simulation
 
 import kinematics
+import kinematics1
 from constants import *
 
 # from squaternion import Quaternion
@@ -24,12 +25,12 @@ class Parameters:
         self.legAngles = LEG_ANGLES
         # Initial leg positions in the coordinates of each leg.
         self.initLeg = []  # INIT_LEG_POSITIONS
-        self.initLeg.append([0.170, 0])
-        self.initLeg.append([0.170, 0])
-        self.initLeg.append([0.170, 0])
-        self.initLeg.append([0.170, 0])
-        self.initLeg.append([0.170, 0])
-        self.initLeg.append([0.170, 0])
+        self.initLeg.append([0.170, 0,self.z])
+        self.initLeg.append([0.170, 0,self.z])
+        self.initLeg.append([0.170, 0,self.z])
+        self.initLeg.append([0.170, 0,self.z])
+        self.initLeg.append([0.170, 0,self.z])
+        self.initLeg.append([0.170, 0,self.z])
 
         # Motor re-united by joint name for the simulation
         self.legs = {}
@@ -100,6 +101,13 @@ elif args.mode == "inverse":
     controls["target_y"] = p.addUserDebugParameter("target_y", -0.4, 0.4, alphas[1])
     controls["target_z"] = p.addUserDebugParameter("target_z", -0.4, 0.4, alphas[2])
 
+elif args.mode == "walk":
+    #cross = p.loadURDF("target2/robot.urdf")
+    # Use your own DK function
+    alphas = kinematics.computeDK(0, 0, 0, use_rads=True)
+    controls["speed_x"] = p.addUserDebugParameter("speed_x", -0.4, 0.4, alphas[0])
+    controls["speed_y"] = p.addUserDebugParameter("speed_y", -0.4, 0.4, alphas[1])
+
 
 while True:
     targets = {}
@@ -162,6 +170,29 @@ while True:
         p.resetBasePositionAndOrientation(
             cross, T, to_pybullet_quaternion(0, 0, leg_angle)
         )
+    elif args.mode == "walk":
+        x = p.readUserDebugParameter(controls["speed_x"])
+        y = p.readUserDebugParameter(controls["speed_x"])
+        #z = p.readUserDebugParameter(controls["target_z"])
+        # Use your own IK function
+        t=time.time()
+        alphas = kinematics.walk(t,x,y,params)
+    
+        for i in range (0,6):
+            set_leg_angles([alphas[3*i],alphas[3*i+1],alphas[3*i+2]],i+1, targets, params)
+
+        state = sim.setJoints(targets)
+        # Temp
+        sim.setRobotPose([0, 0, 0.5], [0, 0, 0, 1])
+
+        # T = kinematics.rotaton_2D(x, y, z, leg_angle)
+        # T[0] += leg_center_pos[0]
+        # T[1] += leg_center_pos[1]
+        # T[2] += leg_center_pos[2]   
+        # # print("Drawing cross {} at {}".format(i, T))
+        # p.resetBasePositionAndOrientation(
+        #     cross, T, to_pybullet_quaternion(0, 0, leg_angle)
+        # )
     elif args.mode == "robot-ik":
        # Use your own IK function
         for leg_id in range(1, 7):

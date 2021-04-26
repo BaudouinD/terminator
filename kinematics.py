@@ -2,6 +2,7 @@ import math
 from constants import *
 from scipy.optimize import minimize
 import numpy as np
+import interpolation
 
 # Given the sizes (a, b, c) of the 3 sides of a triangle, returns the angle between a and b using the alKashi theorem.
 def alKashi(a, b, c, sign=-1):
@@ -281,3 +282,65 @@ def computeIKOriented(x,y,z,leg_id,params,verbose=True):
     print(res)
 
     return res
+
+
+def legs(leg1, leg2, leg3, leg4,leg5,leg6):
+    """w
+    python simulator.py -m legs
+
+    Le robot est figé en l'air, on contrôle toute les pattes
+
+    - Sliders: les 12 coordonnées (x, y, z) du bout des 6 pattes
+    - Entrée: des positions cibles (tuples (x, y, z)) pour le bout des 6 pattes
+    - Sortie: un tableau contenant les 12 positions angulaires cibles (radian) pour les moteurs
+
+    """
+    ent = [leg1, leg2, leg3, leg4,leg5,leg6]
+    angle = [math.pi / 4,
+        -math.pi / 4,
+        -math.pi / 2,
+        -3 * math.pi / 4,
+        3 * math.pi / 4,
+        math.pi / 2,]
+    targets = []
+    for i in range(0,len(ent)):
+        
+        tmp = np.array(ent[i])
+        #tmp = MatRotation(angle[i],2).dot(tmp)
+        tmp = rot_Z(tmp,angle[i])
+        #tmp[0] = tmp[0] - 0.040  
+        inv = computeIK(tmp[0], tmp[1], tmp[2])
+        for j in range(0,len(inv)):
+            targets.append(inv[j])
+    return targets
+
+
+#splines = [interpolation.LinearSpline3D(),interpolation.LinearSpline3D(),interpolation.LinearSpline3D(),interpolation.LinearSpline3D()]i
+init_legs = [[-0.1,0.1,-0.05],[-0.1,-0.1,-0.05],[0.1,-0.1,-0.05],[0.1,0.1,-0.05],[0.1,0.1,-0.05],[0.1,0.1,-0.05]]
+init_legs2 = [[-0.1,0.1,-0.05],[-0.1,-0.1,-0.05],[0.1,-0.1,-0.05],[0.1,0.1,-0.05],[0.1,0.1,-0.05],[0.1,0.1,-0.05]]
+
+def walk(t, speed_x, speed_y,param):
+    """
+    Le but est d'intégrer tout ce que nous avons vu ici pour faire marcher le robot
+    - Sliders: speed_x, speed_y, speed_rotation, la vitesse cible du robot
+    - Entrée: t, le temps (secondes écoulées depuis le début)
+            speed_x, speed_y, et speed_rotation, vitesses cibles contrôlées par les sliders
+    - Sortie: un tableau contenant les 12 positions angulaires cibles (radian) pour les moteurs
+    """
+    #global init_legs2
+    #targets = [0]*12
+    init_legs=param.initLeg
+    print(init_legs)
+    splines = [interpolation.LinearSpline3D(),interpolation.LinearSpline3D(),interpolation.LinearSpline3D(),interpolation.LinearSpline3D(),interpolation.LinearSpline3D(),interpolation.LinearSpline3D()]
+    for i in range(0,len(splines)):
+        if (i==100):
+            print("i=",i)
+            splines[i].walk_trinalg(init_legs[i],[speed_x+init_legs[i][0],speed_y+ init_legs[i][1],-0.05])
+            if(i%2):
+                init_legs[i] = splines[i].interpolate(t%4)
+            else:
+                init_legs[i] = splines[i].interpolate((t+2)%4)
+
+    
+
+    return legs(init_legs[0],init_legs[1],init_legs[2],init_legs[3],init_legs[4],init_legs[5])
