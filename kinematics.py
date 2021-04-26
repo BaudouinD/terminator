@@ -241,3 +241,8 @@ def modulopi(angle):
         return -math.pi * 2 + angle
 
     return angle
+
+
+def computeIKOriented(x,y,z,leg_id,params,verbose=True):
+    tab=rot_Z([x,y,z],params.LEG_ANGLES[leg_id])
+    return computeIK(tab[0],tab[1],tab[2])
