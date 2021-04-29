@@ -272,14 +272,12 @@ def modulopi(angle):
 
 
 def computeIKOriented(x,y,z,leg_id,params,verbose=True):
-    print(x,y,z)
-    x += params.initLeg[leg_id - 1][0]
-    y += params.initLeg[leg_id - 1][1]
-    z += params.z
-   
-    tab= rotaton_2D(x,y,z,params.legAngles[leg_id - 1])
+    tab= rotaton_2D(x,y,z,-params.legAngles[leg_id - 1])
+    x = x - params.initLeg[leg_id - 1][0] + LEG_CENTER_POS[leg_id - 1][0]
+    y = y - params.initLeg[leg_id - 1][1] + LEG_CENTER_POS[leg_id - 1][1]
+    z = z - params.z + LEG_CENTER_POS[leg_id - 1][2]
     res = computeIK(tab[0],tab[1],tab[2])
-    print(res)
+
 
     return res
 
