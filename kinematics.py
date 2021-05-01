@@ -163,15 +163,15 @@ def computeIK(
 
     # Distance between the second motor and the projection of the end of the leg on the X/Y plane
     xp = math.sqrt(x * x + y * y) - l1
-    # if xp < 0:
-    #     print("Destination point too close")
-    #     xp = 0
+    if xp < 0:
+        print("Destination point too close")
+        xp = 0
 
     # Distance between the second motor arm and the end of the leg
     d = math.sqrt(math.pow(xp, 2) + math.pow(z, 2))
-    # if d > l2 + l3:
-    #     print("Destination point too far away")
-    #     d = l2 + l3
+    if d > l2 + l3:
+        print("Destination point too far away")
+        d = l2 + l3
 
     # Knowing l2, l3 and d, theta1 and theta2 can be computed using the Al Kashi law
     # There are 2 solutions for most of the points, forcing a convention here
@@ -274,27 +274,15 @@ def modulopi(angle):
     return angle
 
  
-
-    # angles = constants.LEG_ANGLES # [np.pi/4, 0, np.pi/2, np.pi, np.pi, -np.pi/2]
-    # a = angles[leg_id-1]
-    # rot = R.from_rotvec(a * np.array([0,0,1])).as_matrix()
-
-    # pos_ini = params.initLeg[leg_id-1] + [params.z]
-
-    # print("pos :", np.array(pos))
-    # print("pos apres rot :", np.array(pos) + np.array(pos_ini))
-    
-    # res = rot.dot(np.array(pos)) + np.array(pos_ini)
-    # return computeIK(*res)
-
 def computeIKOriented(x,y,z,leg_id,params,verbose=True):
     pos = (x, y, z*Z_DIRECTION)
     a = params.legAngles[leg_id-1]
     rot = np.array(rotaton_2D(x,y,z*Z_DIRECTION,a))
     pos_ini = params.initLeg[leg_id-1] 
-    print("rot :",rot)
-    print("pos :", np.array(pos))
-    print("pos apres rot :", np.array(pos) + np.array(pos_ini))
+    if(verbose):
+        print("rot :",rot)
+        print("pos :", np.array(pos))
+        print("pos apres rot :", np.array(pos) + np.array(pos_ini))
     res = []
     for i in range(3):
         res.append( rot[i] + np.array(pos_ini)[i])
@@ -302,45 +290,7 @@ def computeIKOriented(x,y,z,leg_id,params,verbose=True):
     return computeIK(res[0],res[1],res[2])
 
 
-
-# class Parameters:
-#     def __init__(
-#         self,
-#         z=-0.06,
-#     ):
-#         self.z = z
-#         # Angle between the X axis of the leg and the X axis of the robot for each leg
-#         self.legAngles = LEG_ANGLES
-#         # Initial leg positions in the coordinates of each leg.
-#         self.initLeg = []  # INIT_LEG_POSITIONS
-#         self.initLeg.append([0.170, 0,self.z])
-#         self.initLeg.append([0.170, 0,self.z])
-#         self.initLeg.append([0.170, 0,self.z])
-#         self.initLeg.append([0.170, 0,self.z])
-#         self.initLeg.append([0.170, 0,self.z])
-#         self.initLeg.append([0.170, 0,self.z])
-
-#         # Motor re-united by joint name for the simulation
-#         self.legs = {}
-#         self.legs[1] = ["j_c1_rf", "j_thigh_rf", "j_tibia_rf"]
-#         self.legs[6] = ["j_c1_rm", "j_thigh_rm", "j_tibia_rm"]
-#         self.legs[5] = ["j_c1_rr", "j_thigh_rr", "j_tibia_rr"]
-#         self.legs[2] = ["j_c1_lf", "j_thigh_lf", "j_tibia_lf"]
-#         self.legs[3] = ["j_c1_lm", "j_thigh_lm", "j_tibia_lm"]
-#         self.legs[4] = ["j_c1_lr", "j_thigh_lr", "j_tibia_lr"]
-
-
-# for leg_id in range(1, 7):
-#             alphas =computeIKOriented(
-#                 0.01 * np.sin(2 * np.pi * 0.5 ),
-#                 0.02 * np.cos(2 * np.pi * 0.5 ),
-#                 0.03 * np.sin(2 * np.pi * 0.2 ),
-#                 leg_id,
-#                 Parameters(),
-#                 verbose=True,
-#             )
-
-def legs(leg1, leg2, leg3, leg4,leg5,leg6):
+def legs(leg1, leg2, leg3, leg4,leg5,leg6,params):
     """w
     python simulator.py -m legs
 
@@ -352,30 +302,26 @@ def legs(leg1, leg2, leg3, leg4,leg5,leg6):
 
     """
     ent = [leg1, leg2, leg3, leg4,leg5,leg6]
-    angle = [math.pi / 4,
-        -math.pi / 4,
-        -math.pi / 2,
-        -3 * math.pi / 4,
-        3 * math.pi / 4,
-        math.pi / 2,]
     targets = []
     for i in range(0,len(ent)):
-        
-        tmp = np.array(ent[i])
-        #tmp = MatRotation(angle[i],2).dot(tmp)
-        tmp = rot_Z(tmp,angle[i])
-        #tmp[0] = tmp[0] - 0.040  
-        inv = computeIK(tmp[0], tmp[1], tmp[2])
+        inv = computeIKOriented(ent[i][0], ent[i][1], ent[i][2],i+1,params,verbose=False)
         for j in range(0,len(inv)):
             targets.append(inv[j])
     return targets
 
 
 #splines = [interpolation.LinearSpline3D(),interpolation.LinearSpline3D(),interpolation.LinearSpline3D(),interpolation.LinearSpline3D()]i
-init_legs = [[-0.1,0.1,-0.05],[-0.1,-0.1,-0.05],[0.1,-0.1,-0.05],[0.1,0.1,-0.05],[0.1,0.1,-0.05],[0.1,0.1,-0.05]]
-init_legs2 = [[-0.1,0.1,-0.05],[-0.1,-0.1,-0.05],[0.1,-0.1,-0.05],[0.1,0.1,-0.05],[0.1,0.1,-0.05],[0.1,0.1,-0.05]]
 
-def walk(t, speed_x, speed_y,param):
+
+init_legs =  [[0.0,0.0,-0.06]] * 6
+init_legs2 = [[0.0,0.0,0.0]] * 6
+is_init = False
+delta = 0
+oldt = 0
+
+def walk(t, speed_x, speed_y,param,l1=constL1,
+    l2=constL2,
+    l3=constL3):
     """
     Le but est d'intégrer tout ce que nous avons vu ici pour faire marcher le robot
     - Sliders: speed_x, speed_y, speed_rotation, la vitesse cible du robot
@@ -383,20 +329,27 @@ def walk(t, speed_x, speed_y,param):
             speed_x, speed_y, et speed_rotation, vitesses cibles contrôlées par les sliders
     - Sortie: un tableau contenant les 12 positions angulaires cibles (radian) pour les moteurs
     """
-    #global init_legs2
-    #targets = [0]*12
-    init_legs=param.initLeg
-    print(init_legs)
-    splines = [interpolation.LinearSpline3D(),interpolation.LinearSpline3D(),interpolation.LinearSpline3D(),interpolation.LinearSpline3D(),interpolation.LinearSpline3D(),interpolation.LinearSpline3D()]
-    for i in range(0,len(splines)):
-        if (i==100):
-            print("i=",i)
-            splines[i].walk_trinalg(init_legs[i],[speed_x+init_legs[i][0],speed_y+ init_legs[i][1],-0.05])
-            if(i%2):
-                init_legs[i] = splines[i].interpolate(t%4)
-            else:
-                init_legs[i] = splines[i].interpolate((t+2)%4)
-
+    global init_legs2
+    global is_init
+    global delta
+    global oldt
     
+    delta = t - oldt 
+    if(is_init == False):
+        print(init_legs2)
+        is_init = True
 
-    return legs(init_legs[0],init_legs[1],init_legs[2],init_legs[3],init_legs[4],init_legs[5])
+    else:
+        splines = [interpolation.LinearSpline3D(),interpolation.LinearSpline3D(),interpolation.LinearSpline3D(),interpolation.LinearSpline3D(),interpolation.LinearSpline3D(),interpolation.LinearSpline3D()]
+        for i in range(0,len(splines)):
+                splines[i].walk_trinalg(speed_x, 
+                                        speed_y,
+                                        param.z,l1,l2,l3,verbose=False)
+                if(i%2):
+                    init_legs2[i] = splines[i].interpolate(t%(4))
+                else:
+                    init_legs2[i] = splines[i].interpolate((t+2)%(4))
+
+    print("init_legs_2 : ",init_legs2)
+    oldt = t
+    return legs(init_legs2[0],init_legs2[1],init_legs2[2],init_legs2[3],init_legs2[4],init_legs2[5],param)

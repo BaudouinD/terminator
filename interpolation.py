@@ -71,19 +71,29 @@ class LinearSpline3D:
             self.add_entry(3., A[0], A[1], A[2])
             self.init_spline = True
     
-    def walk_trinalg(self, current_position, dest_position):
+
+    # def found(self,x,y,z,l1,l2,l3):
+    #     while(np.sqrt(np.power( np.sqrt(x * x + y * y) - l1, 2) + np.power(z, 2))  > l2 + l3):
+    #         x -= 0.01
+    #         y -= 0.01
+    #     return [x,y]
+
+    def walk_trinalg(self, x , y, z, l1,l2,l3,verbose=True):
         if(self.init_spline):
-            print(current_position)
-            A = current_position
-            B = [current_position[0]+(dest_position[0] - current_position[0] )/2, current_position[1]+(dest_position[1] - current_position[1])/2,  0]
-            C = dest_position
-            print("A=",A)
-            print("B=",B)
-            print("C=",C)
+           
+            # x,y = self.found(x,y,z,l1,l2,l3)    
+
+            C = [x,y,z]
+            A = [0.0,0.0,z]
+            B = [C[0]/2,C[1]/2, 0]
+            if(verbose):
+                print("A=",A)
+                print("B=",B)
+                print("C=",C)
             self.add_entry(0., A[0], A[1], A[2])
             self.add_entry(1., B[0], B[1], B[2])
             self.add_entry(2., C[0], C[1], C[2])
-            self.add_entry(3., B[0], B[1], A[2])
+            self.add_entry(3., B[0], B[1], z)
             #self.add_entry(3., (A[0]-C[0])*1/3, (A[1]-C[1])*1/3, A[2])
             #self.add_entry(4., (A[0]-C[0])*2/3, (A[1]-C[1])*2/3, A[2])
             self.init_spline = True

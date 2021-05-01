@@ -104,9 +104,9 @@ elif args.mode == "inverse":
 elif args.mode == "walk":
     #cross = p.loadURDF("target2/robot.urdf")
     # Use your own DK function
-    alphas = kinematics.computeDK(0, 0, 0, use_rads=True)
-    controls["speed_x"] = p.addUserDebugParameter("speed_x", -0.4, 0.4, alphas[0])
-    controls["speed_y"] = p.addUserDebugParameter("speed_y", -0.4, 0.4, alphas[1])
+    alphas = [0.0,0.0]
+    controls["speed_x"] = p.addUserDebugParameter("speed_x", -1.0, 1.0, alphas[0])
+    controls["speed_y"] = p.addUserDebugParameter("speed_y", -1.0, 1.0, alphas[1])
 
 
 while True:
@@ -183,9 +183,9 @@ while True:
 
         state = sim.setJoints(targets)
         # Temp
-        sim.setRobotPose([0, 0, 0.5], [0, 0, 0, 1])
+    
 
-        # T = kinematics.rotaton_2D(x, y, z, leg_angle)
+        # T = kinematics.rotaton_2D(x, y, 0, leg_angle)
         # T[0] += leg_center_pos[0]
         # T[1] += leg_center_pos[1]
         # T[2] += leg_center_pos[2]   
