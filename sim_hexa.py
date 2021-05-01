@@ -206,7 +206,7 @@ while True:
             )
             
             set_leg_angles(alphas, leg_id, targets, params)
-        sim.setRobotPose([0, 0, 0.5], [0, 0, 0, 1])
+        #sim.setRobotPose([0, 0, 0.5], [0, 0, 0, 1])
         state = sim.setJoints(targets)
 
     sim.tick()

@@ -4,6 +4,9 @@ from scipy.optimize import minimize
 import numpy as np
 import interpolation
 
+
+
+
 # Given the sizes (a, b, c) of the 3 sides of a triangle, returns the angle between a and b using the alKashi theorem.
 def alKashi(a, b, c, sign=-1):
     if a * b == 0:
@@ -270,17 +273,72 @@ def modulopi(angle):
 
     return angle
 
+ 
+
+    # angles = constants.LEG_ANGLES # [np.pi/4, 0, np.pi/2, np.pi, np.pi, -np.pi/2]
+    # a = angles[leg_id-1]
+    # rot = R.from_rotvec(a * np.array([0,0,1])).as_matrix()
+
+    # pos_ini = params.initLeg[leg_id-1] + [params.z]
+
+    # print("pos :", np.array(pos))
+    # print("pos apres rot :", np.array(pos) + np.array(pos_ini))
+    
+    # res = rot.dot(np.array(pos)) + np.array(pos_ini)
+    # return computeIK(*res)
 
 def computeIKOriented(x,y,z,leg_id,params,verbose=True):
-    tab= rotaton_2D(x,y,z,-params.legAngles[leg_id - 1])
-    x = x - params.initLeg[leg_id - 1][0] + LEG_CENTER_POS[leg_id - 1][0]
-    y = y - params.initLeg[leg_id - 1][1] + LEG_CENTER_POS[leg_id - 1][1]
-    z = z - params.z + LEG_CENTER_POS[leg_id - 1][2]
-    res = computeIK(tab[0],tab[1],tab[2])
+    pos = (x, y, z*Z_DIRECTION)
+    a = params.legAngles[leg_id-1]
+    rot = np.array(rotaton_2D(x,y,z*Z_DIRECTION,a))
+    pos_ini = params.initLeg[leg_id-1] 
+    print("rot :",rot)
+    print("pos :", np.array(pos))
+    print("pos apres rot :", np.array(pos) + np.array(pos_ini))
+    res = []
+    for i in range(3):
+        res.append( rot[i] + np.array(pos_ini)[i])
+
+    return computeIK(res[0],res[1],res[2])
 
 
-    return res
 
+# class Parameters:
+#     def __init__(
+#         self,
+#         z=-0.06,
+#     ):
+#         self.z = z
+#         # Angle between the X axis of the leg and the X axis of the robot for each leg
+#         self.legAngles = LEG_ANGLES
+#         # Initial leg positions in the coordinates of each leg.
+#         self.initLeg = []  # INIT_LEG_POSITIONS
+#         self.initLeg.append([0.170, 0,self.z])
+#         self.initLeg.append([0.170, 0,self.z])
+#         self.initLeg.append([0.170, 0,self.z])
+#         self.initLeg.append([0.170, 0,self.z])
+#         self.initLeg.append([0.170, 0,self.z])
+#         self.initLeg.append([0.170, 0,self.z])
+
+#         # Motor re-united by joint name for the simulation
+#         self.legs = {}
+#         self.legs[1] = ["j_c1_rf", "j_thigh_rf", "j_tibia_rf"]
+#         self.legs[6] = ["j_c1_rm", "j_thigh_rm", "j_tibia_rm"]
+#         self.legs[5] = ["j_c1_rr", "j_thigh_rr", "j_tibia_rr"]
+#         self.legs[2] = ["j_c1_lf", "j_thigh_lf", "j_tibia_lf"]
+#         self.legs[3] = ["j_c1_lm", "j_thigh_lm", "j_tibia_lm"]
+#         self.legs[4] = ["j_c1_lr", "j_thigh_lr", "j_tibia_lr"]
+
+
+# for leg_id in range(1, 7):
+#             alphas =computeIKOriented(
+#                 0.01 * np.sin(2 * np.pi * 0.5 ),
+#                 0.02 * np.cos(2 * np.pi * 0.5 ),
+#                 0.03 * np.sin(2 * np.pi * 0.2 ),
+#                 leg_id,
+#                 Parameters(),
+#                 verbose=True,
+#             )
 
 def legs(leg1, leg2, leg3, leg4,leg5,leg6):
     """w
