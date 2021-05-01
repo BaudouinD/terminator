@@ -318,6 +318,7 @@ init_legs2 = [[0.0,0.0,0.0]] * 6
 is_init = False
 delta = 0
 oldt = 0
+splines = [interpolation.LinearSpline3D(),interpolation.LinearSpline3D(),interpolation.LinearSpline3D(),interpolation.LinearSpline3D(),interpolation.LinearSpline3D(),interpolation.LinearSpline3D()]
 
 def walk(t, speed_x, speed_y,param,l1=constL1,
     l2=constL2,
@@ -333,23 +334,21 @@ def walk(t, speed_x, speed_y,param,l1=constL1,
     global is_init
     global delta
     global oldt
+    global splines
     
     delta = t - oldt 
     if(is_init == False):
         print(init_legs2)
         is_init = True
-
     else:
-        splines = [interpolation.LinearSpline3D(),interpolation.LinearSpline3D(),interpolation.LinearSpline3D(),interpolation.LinearSpline3D(),interpolation.LinearSpline3D(),interpolation.LinearSpline3D()]
         for i in range(0,len(splines)):
-                splines[i].walk_trinalg(speed_x, 
-                                        speed_y,
-                                        param.z,l1,l2,l3,verbose=False)
+                splines[i].walk_trinalg(speed_x*delta, 
+                                        speed_y*delta,
+                                        param.z,l1,l2,l3,verbose=True)
                 if(i%2):
-                    init_legs2[i] = splines[i].interpolate(t%(4))
+                    init_legs2[i] = splines[i].interpolate(t%4)
                 else:
-                    init_legs2[i] = splines[i].interpolate((t+2)%(4))
+                    init_legs2[i] = splines[i].interpolate((t+2)%4)
 
-    print("init_legs_2 : ",init_legs2)
     oldt = t
     return legs(init_legs2[0],init_legs2[1],init_legs2[2],init_legs2[3],init_legs2[4],init_legs2[5],param)

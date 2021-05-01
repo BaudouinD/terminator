@@ -105,8 +105,8 @@ elif args.mode == "walk":
     #cross = p.loadURDF("target2/robot.urdf")
     # Use your own DK function
     alphas = [0.0,0.0]
-    controls["speed_x"] = p.addUserDebugParameter("speed_x", -1.0, 1.0, alphas[0])
-    controls["speed_y"] = p.addUserDebugParameter("speed_y", -1.0, 1.0, alphas[1])
+    controls["speed_x"] = p.addUserDebugParameter("speed_x", -5.0, 5.0, alphas[0])
+    controls["speed_y"] = p.addUserDebugParameter("speed_y", -5.0, 5.0, alphas[1])
 
 
 while True:
@@ -172,7 +172,7 @@ while True:
         )
     elif args.mode == "walk":
         x = p.readUserDebugParameter(controls["speed_x"])
-        y = p.readUserDebugParameter(controls["speed_x"])
+        y = p.readUserDebugParameter(controls["speed_y"])
         #z = p.readUserDebugParameter(controls["target_z"])
         # Use your own IK function
         t=time.time()
