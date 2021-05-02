@@ -57,13 +57,6 @@ def computeDK(
     theta1 = THETA1_MOTOR_SIGN * theta1 * angle_unit
     theta2 = (THETA2_MOTOR_SIGN * theta2 - theta2Correction) * angle_unit
     theta3 = (THETA3_MOTOR_SIGN * theta3 - theta3Correction) * angle_unit
-    # print(
-    #     "corrected angles={}, {}, {}".format(
-    #         theta1 * (1.0 / angle_unit),
-    #         theta2 * (1.0 / angle_unit),
-    #         theta3 * (1.0 / angle_unit),
-    #     )
-    # )
 
     planContribution = l1 + l2 * math.cos(theta2) + l3 * math.cos(theta2 + theta3)
 
@@ -96,14 +89,6 @@ def computeDKDetailed(
     theta1 = THETA1_MOTOR_SIGN * theta1 * angle_unit
     theta2 = (THETA2_MOTOR_SIGN * theta2 - theta2Correction) * angle_unit
     theta3 = (THETA3_MOTOR_SIGN * theta3 - theta3Correction) * angle_unit
-
-    # print(
-    #     "corrected angles={}, {}, {}".format(
-    #         theta1 * (1.0 / angle_unit),
-    #         theta2 * (1.0 / angle_unit),
-    #         theta3 * (1.0 / angle_unit),
-    #     )
-    # )
 
     planContribution = l1 + l2 * math.cos(theta2) + l3 * math.cos(theta2 + theta3)
 
@@ -216,34 +201,6 @@ def computeIK(
 
     return result
 
-
-# def al_kashi(adj1,adj2,opp):
-#     res=(adj1*adj1+adj2*adj2-opp*opp)/(2*adj1*adj2)
-#     newres=min(max(res,-1),1)
-#     if(newres!=res):
-#        print("WARNING : value in arccos out of bounds ([-1;1]) :%f " %res)
-#     return np.arccos(newres)
-
-# def computeIK(x,y,z, l1=constL1,l2=constL2,l3=constL3,use_rads=True):
-
-#     z = -z
-
-#     theta1=np.arctan2(y,x)
-#     AH=np.sqrt(x*x+y*y)-l1
-#     AM=np.sqrt(z*z+AH*AH)
-#     gamma2=al_kashi(l2,l3,AM) #np.arccos((l2*l2+l3*l3-AM*AM)/(2*l2*l3))
-#     gamma=np.pi-gamma2 + theta3Correction
-#     delta=al_kashi(l2,AM,l3) #np.arccos((l2*l2+AM*AM-l3*l3)/(2*l2*AM))
- 
-#     alpha=np.arctan2(-z,AH)
-#     beta=delta-alpha + theta2Correction
-
-#     if(use_rads):
-#         return [theta1, beta, gamma] 
-#     else:
-#         return list(map(rad_to_deg,[theta1, beta, gamma]))
-
-
 def angleRestrict(angle, use_rads=False):
     if use_rads:
         return modulopi(angle)
@@ -274,10 +231,10 @@ def modulopi(angle):
     return angle
 
  
-def computeIKOriented(x,y,z,leg_id,params,verbose=True):
+def computeIKOriented(x,y,z,theta,leg_id,params,verbose=True):
     pos = (x, y, z*Z_DIRECTION)
     a = params.legAngles[leg_id-1]
-    rot = np.array(rotaton_2D(x,y,z*Z_DIRECTION,a))
+    rot = np.array(rotaton_2D(x,y,z*Z_DIRECTION,a+theta))
     pos_ini = params.initLeg[leg_id-1] 
     if(verbose):
         print("rot :",rot)
@@ -290,7 +247,7 @@ def computeIKOriented(x,y,z,leg_id,params,verbose=True):
     return computeIK(res[0],res[1],res[2])
 
 
-def legs(leg1, leg2, leg3, leg4,leg5,leg6,params):
+def legs(leg1, leg2, leg3, leg4,leg5,leg6,theta,params):
     """w
     python simulator.py -m legs
 
@@ -304,14 +261,10 @@ def legs(leg1, leg2, leg3, leg4,leg5,leg6,params):
     ent = [leg1, leg2, leg3, leg4,leg5,leg6]
     targets = []
     for i in range(0,len(ent)):
-        inv = computeIKOriented(ent[i][0], ent[i][1], ent[i][2],i+1,params,verbose=False)
+        inv = computeIKOriented(ent[i][0], ent[i][1], ent[i][2],theta,i+1,params,verbose=False)
         for j in range(0,len(inv)):
             targets.append(inv[j])
     return targets
-
-
-#splines = [interpolation.LinearSpline3D(),interpolation.LinearSpline3D(),interpolation.LinearSpline3D(),interpolation.LinearSpline3D()]i
-
 
 init_legs =  [[0.0,0.0,-0.06]] * 6
 init_legs2 = [[0.0,0.0,0.0]] * 6
@@ -320,7 +273,7 @@ delta = 0
 oldt = 0
 splines = [interpolation.LinearSpline3D(),interpolation.LinearSpline3D(),interpolation.LinearSpline3D(),interpolation.LinearSpline3D(),interpolation.LinearSpline3D(),interpolation.LinearSpline3D()]
 
-def walk(t, speed_x, speed_y,param,l1=constL1,
+def walk(t, speed_x, speed_y,theta,param,l1=constL1,
     l2=constL2,
     l3=constL3):
     """
@@ -344,11 +297,41 @@ def walk(t, speed_x, speed_y,param,l1=constL1,
         for i in range(0,len(splines)):
                 splines[i].walk_trinalg(speed_x*delta, 
                                         speed_y*delta,
-                                        param.z,l1,l2,l3,verbose=True)
+                                        param.z,l1,l2,l3,verbose=False)
                 if(i%2):
                     init_legs2[i] = splines[i].interpolate(t%4)
                 else:
                     init_legs2[i] = splines[i].interpolate((t+2)%4)
 
     oldt = t
-    return legs(init_legs2[0],init_legs2[1],init_legs2[2],init_legs2[3],init_legs2[4],init_legs2[5],param)
+    return legs(init_legs2[0],init_legs2[1],init_legs2[2],init_legs2[3],init_legs2[4],init_legs2[5],theta,param)
+
+def legs_toupie(ent,params):
+    targets = []
+    for i in range(0,len(ent)):
+        inv = computeIK(ent[i][0], ent[i][1], ent[i][2])
+        for j in range(0,len(inv)):
+            targets.append(inv[j])
+    return targets
+
+def toupie(t,speed,param,l1=constL1,l2=constL2,l3=constL3):
+    global init_legs2
+    global is_init
+    global delta
+    global oldt
+    global splines
+    
+    delta = t - oldt 
+    if(is_init == False):
+        print(init_legs2)
+        is_init = True
+    else:
+        for i in range(0,len(splines)):
+                splines[i].toupie_trinalg(param.z,speed,l1,l2,l3,verbose=False)
+                if(i%2):
+                    init_legs2[i] = splines[i].interpolate(t%4)
+                else:
+                    init_legs2[i] = splines[i].interpolate((t+2)%4)
+
+    oldt = t
+    return legs_toupie(init_legs2,param)

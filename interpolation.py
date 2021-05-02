@@ -78,13 +78,16 @@ class LinearSpline3D:
             y -= 0.01
         return [x,y]
 
-    def walk_trinalg(self, x , y, z, l1,l2,l3,verbose=True):
+    def walk_trinalg(self, x , y, z, l1,l2,l3,verbose=False):
         if(self.init_spline):
-           
-            x,y = self.found(x,y,z,l1,l2,l3)    
-            C = [x,y,z]
+
             A = [0.0,0.0,z]
-            B = [C[0]/2,C[1]/2, 0]
+            B = [0.0,0.0,z]
+            C = [0.0,0.0,z]
+            if x!=0 or y!=0:
+                C = [x,y,z]
+                A = [0.0,0.0,z]
+                B = [C[0]/2,C[1]/2, 0]
 
             if(verbose):
                 print("A=",A)
@@ -96,7 +99,21 @@ class LinearSpline3D:
             self.add_entry(3., B[0], B[1], z)
             self.init_spline = True
         
+    def toupie_trinalg(self,z,speed,l1,l2,l3,verbose=False):
+        if(self.init_spline):
+            A = [0.170,0.0,z]
+            B = [0.170,0.0,z]
+            C = [0.170,0.0,z]
+            if speed!=0:
+                C = [0.170,speed,z]
+                A = [0.170,0.0,z]
+                B = [0.2,C[1]/2, -z]
 
+            self.add_entry(0., A[0], A[1], A[2])
+            self.add_entry(1., B[0], B[1], B[2])
+            self.add_entry(2., C[0], C[1], C[2])
+            self.add_entry(3., B[0], B[1], z)
+            self.init_spline = True
 
 if __name__ == "__main__":
     spline = LinearSpline()

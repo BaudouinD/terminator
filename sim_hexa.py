@@ -104,9 +104,16 @@ elif args.mode == "inverse":
 elif args.mode == "walk":
     #cross = p.loadURDF("target2/robot.urdf")
     # Use your own DK function
-    alphas = [0.0,0.0]
+    alphas = [0.0,0.0,0.0]
     controls["speed_x"] = p.addUserDebugParameter("speed_x", -5.0, 5.0, alphas[0])
     controls["speed_y"] = p.addUserDebugParameter("speed_y", -5.0, 5.0, alphas[1])
+    controls["theta"] = p.addUserDebugParameter("theta", 0.0, 2*math.pi, alphas[2])
+
+elif args.mode == "toupie":
+    #cross = p.loadURDF("target2/robot.urdf")
+    # Use your own DK function
+    alphas = [0.0,0.0]
+    controls["speed"] = p.addUserDebugParameter("speed", -5.0, 5.0, alphas[0])
 
 
 while True:
@@ -166,47 +173,44 @@ while True:
         T[0] += leg_center_pos[0]
         T[1] += leg_center_pos[1]
         T[2] += leg_center_pos[2]   
-        # print("Drawing cross {} at {}".format(i, T))
         p.resetBasePositionAndOrientation(
             cross, T, to_pybullet_quaternion(0, 0, leg_angle)
         )
     elif args.mode == "walk":
         x = p.readUserDebugParameter(controls["speed_x"])
         y = p.readUserDebugParameter(controls["speed_y"])
-        #z = p.readUserDebugParameter(controls["target_z"])
-        # Use your own IK function
+        theta = p.readUserDebugParameter(controls["theta"])
         t=time.time()
-        alphas = kinematics.walk(t,x,y,params)
+        alphas = kinematics.walk(t,x,y,theta,params)
     
         for i in range (0,6):
             set_leg_angles([alphas[3*i],alphas[3*i+1],alphas[3*i+2]],i+1, targets, params)
 
         state = sim.setJoints(targets)
-        # Temp
-    
 
-        # T = kinematics.rotaton_2D(x, y, 0, leg_angle)
-        # T[0] += leg_center_pos[0]
-        # T[1] += leg_center_pos[1]
-        # T[2] += leg_center_pos[2]   
-        # # print("Drawing cross {} at {}".format(i, T))
-        # p.resetBasePositionAndOrientation(
-        #     cross, T, to_pybullet_quaternion(0, 0, leg_angle)
-        # )
+    elif args.mode == "toupie":
+        x = p.readUserDebugParameter(controls["speed"])
+        t=time.time()
+        alphas = kinematics.toupie(t,x/10,params)
+    
+        for i in range (0,6):
+            set_leg_angles([alphas[3*i],alphas[3*i+1],alphas[3*i+2]],i+1, targets, params)
+
+        state = sim.setJoints(targets)
+
     elif args.mode == "robot-ik":
-       # Use your own IK function
         for leg_id in range(1, 7):
             alphas = kinematics.computeIKOriented(
                 0.01 * math.sin(2 * math.pi * 0.5 * time.time()),
                 0.02 * math.cos(2 * math.pi * 0.5 * time.time()),
                 0.03 * math.sin(2 * math.pi * 0.2 * time.time()),
+                0,
                 leg_id,
                 params,
-                verbose=True,
+                verbose=False,
             )
             
             set_leg_angles(alphas, leg_id, targets, params)
-        #sim.setRobotPose([0, 0, 0.5], [0, 0, 0, 1])
         state = sim.setJoints(targets)
 
     sim.tick()
