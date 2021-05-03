@@ -104,8 +104,8 @@ elif args.mode == "walk":
     #cross = p.loadURDF("target2/robot.urdf")
     # Use your own DK function
     alphas = [0.0,0.0,0.0]
-    controls["speed_x"] = p.addUserDebugParameter("speed_x", -5.0, 5.0, alphas[0])
-    controls["speed_y"] = p.addUserDebugParameter("speed_y", -5.0, 5.0, alphas[1])
+    controls["speed_x"] = p.addUserDebugParameter("speed_x", -1.0, 1.0, alphas[0])
+    controls["speed_y"] = p.addUserDebugParameter("speed_y", -1.0, 1.0, alphas[1])
     controls["theta"] = p.addUserDebugParameter("theta", 0.0, 2*math.pi, alphas[2])
 
 elif args.mode == "toupie":
@@ -180,7 +180,8 @@ while True:
         y = p.readUserDebugParameter(controls["speed_y"])
         theta = p.readUserDebugParameter(controls["theta"])
         t=time.time()
-        alphas = kinematics.walk(t,x,y,theta,params)
+
+        alphas = kinematics.walk(t*5,x,y,theta,params)
     
         for i in range (0,6):
             set_leg_angles([alphas[3*i],alphas[3*i+1],alphas[3*i+2]],i+1, targets, params)

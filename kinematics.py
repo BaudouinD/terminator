@@ -302,7 +302,7 @@ def walk(t, speed_x, speed_y,theta,param,l1=constL1,
                     init_legs2[i] = splines[i].interpolate(t%4)
                 else:
                     init_legs2[i] = splines[i].interpolate((t+2)%4)
-
+   
     oldt = t
     return legs(init_legs2[0],init_legs2[1],init_legs2[2],init_legs2[3],init_legs2[4],init_legs2[5],theta,param)
 

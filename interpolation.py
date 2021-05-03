@@ -93,10 +93,13 @@ class LinearSpline3D:
                 print("A=",A)
                 print("B=",B)
                 print("C=",C)
-            self.add_entry(0., A[0], A[1], A[2])
-            self.add_entry(1., B[0], B[1], B[2])
-            self.add_entry(2., C[0], C[1], C[2])
-            self.add_entry(3., B[0], B[1], z)
+            
+            for i in np.linspace(0,1,10):
+                self.add_entry(i, B[0]*i + A[0], B[1]*i + A[0] , A[2]*(1-i))
+            for i in np.linspace(1,2,10):
+                self.add_entry(i, B[0]*(2-i) + C[0]*(i-1) , B[1]*(2-i) + C[1]*(i-1), z*(i-1)  )
+            for i in np.linspace(2,3,10):
+                self.add_entry(i,A[0]*(i-2) +  C[0]*(3-i), A[1] * (i-2) + C[1]*(3-i) , z )
             self.init_spline = True
         
     def toupie_trinalg(self,z,speed,l1,l2,l3,verbose=False):
