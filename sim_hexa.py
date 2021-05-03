@@ -8,7 +8,6 @@ import pybullet as p
 from onshape_to_robot.simulation import Simulation
 
 import kinematics
-import kinematics1
 from constants import *
 
 # from squaternion import Quaternion
